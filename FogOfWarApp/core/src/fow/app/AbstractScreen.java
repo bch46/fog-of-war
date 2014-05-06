@@ -24,6 +24,9 @@ public abstract class AbstractScreen implements Screen {
 
 	protected final Main game;
 	protected final Stage stage;
+	
+	protected Screen nextScreen;
+	protected boolean toNextScreen;
 
 	private BitmapFont font;
 	private SpriteBatch batch;
@@ -38,6 +41,9 @@ public abstract class AbstractScreen implements Screen {
 		// int height = ( isGameScreen() ? GAME_VIEWPORT_HEIGHT :
 		// MENU_VIEWPORT_HEIGHT );
 		this.stage = new Stage();
+		
+		this.nextScreen = null;
+		this.toNextScreen = false;
 	}
 
 	protected String getName() {

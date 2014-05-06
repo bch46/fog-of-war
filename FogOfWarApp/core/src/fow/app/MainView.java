@@ -40,7 +40,7 @@ public class MainView extends Table {
 				MainView.this.controller.onConnectPressed();
 			}
 		});
-		
+
 		this.row();
 		this.add(connectButton);
 	}

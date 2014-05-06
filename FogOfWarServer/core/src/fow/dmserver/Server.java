@@ -119,7 +119,8 @@ public class Server extends Thread {
     	clientConnection.setConfirmed(true);
         clientConnection.setId(gameId);
         confirmedClientConnections.put(gameId, clientConnection);
-        clientConnection.sendEvent(new NetworkEvent(Type.CONFIRMED, gameId));
+        Object[] data = {gameId, clientConnection.isDm()};
+        clientConnection.sendEvent(new NetworkEvent(Type.CONFIRMED, data));
     }
 
     /**

@@ -36,6 +36,8 @@ public class ServerConnection {
 
 	private int accountId;
 	private short gameId;
+	
+	private boolean isDm;
 
 	private boolean alive;
 
@@ -111,15 +113,15 @@ public class ServerConnection {
 	 * @return true if socket was opened successfully, false if not.
 	 */
 	public boolean connect(final HandshakeListener handshakeListener) {
-		alive = true;
-		setOnReceiveNetworkEventListener(handshakeListener);
 		if (openSocket()) {
+			alive = true;
+			setOnReceiveNetworkEventListener(handshakeListener);
 			startInProducerThread();
 			startOutConsumerThread();
-			return true;
 		} else {
-			return false;
+			alive = false;
 		}
+		return alive;
 	}
 
 	/**
@@ -367,6 +369,14 @@ public class ServerConnection {
 
 	public short getGameId() {
 		return gameId;
+	}
+
+	public boolean isDm() {
+		return isDm;
+	}
+
+	public void setDm(boolean isDm) {
+		this.isDm = isDm;
 	}
 
 	public interface OnReceiveNetworkEventListener {
