@@ -82,6 +82,7 @@ proguard/
 *.war
 
 # gwt caches and compiled units #
+war/
 war/gwt_bree/
 gwt-unitCache/
 
