@@ -35,9 +35,15 @@ public class MainScreen extends AbstractScreen {
 			return;
 		}
 
+		// Check that ID isn't negative
+		int id = Integer.valueOf(idText).intValue();
+		if (id < 0) {
+			System.out.println("Can't connect due to invalid ID");
+			return;
+		}
+
 		// Use regex to validate the IP address format
 		if (Utils.validateIP(ipAddress)) {
-			int id = Integer.valueOf(idText).intValue();
 			// Create a local instance of the server connection and attempt to connect
 			// If connection fails this object will be garbage collected
 			ServerConnection sc = new ServerConnection(ipAddress, Main.port, id, true);

@@ -115,14 +115,14 @@ public class NetworkEventHandler {
 						.remove(tempClientId);
 				if (clientConnection != null) {
 					// TODO this is a temporary hack
-					if (state.getDmId() < 0) {
-						state.setDmId(accountId);
-						clientConnection.setDm(true);
+					if (state.getDmId() < 0 || state.getDmId() == accountId.intValue()) {
 						System.out.println("DM joined with account id "+accountId);
+						state.setDmId(accountId);
+						server.confirmClient(clientConnection, gameId, true);
 					} else {
 						System.out.println("PC joined with account id "+accountId);
+						server.confirmClient(clientConnection, gameId, false);
 					}
-					server.confirmClient(clientConnection, gameId);
 				} // else some client is doing something weird
 			}
 		} else {

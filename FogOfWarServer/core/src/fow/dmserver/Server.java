@@ -115,11 +115,12 @@ public class Server extends Thread {
      * @param clientConnection The client connection to confirm
      * @param gameId The generated gameId for this client
      */
-    protected void confirmClient(final ClientConnection clientConnection, final short gameId) {
+    protected void confirmClient(final ClientConnection clientConnection, final short gameId, final boolean isDm) {
     	clientConnection.setConfirmed(true);
         clientConnection.setId(gameId);
+        clientConnection.setDm(isDm);
         confirmedClientConnections.put(gameId, clientConnection);
-        Object[] data = {gameId, clientConnection.isDm()};
+        Object[] data = {gameId, isDm};
         clientConnection.sendEvent(new NetworkEvent(Type.CONFIRMED, data));
     }
 
