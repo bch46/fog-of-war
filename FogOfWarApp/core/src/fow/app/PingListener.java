@@ -1,8 +1,8 @@
-package fow.dmapp;
+package fow.app;
 
+import fow.app.ServerConnection.OnReceiveNetworkEventListener;
 import fow.common.NetworkEvent;
 import fow.common.NetworkEvent.Type;
-import fow.dmapp.ServerConnection.OnReceiveNetworkEventListener;
 
 public class PingListener implements OnReceiveNetworkEventListener {
     @Override

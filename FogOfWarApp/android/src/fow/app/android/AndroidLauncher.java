@@ -1,10 +1,11 @@
-package fow.dmapp.android;
+package fow.app.android;
 
 import android.os.Bundle;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
-import fow.dmapp.Main;
+
+import fow.app.Main;
 
 public class AndroidLauncher extends AndroidApplication {
 	@Override

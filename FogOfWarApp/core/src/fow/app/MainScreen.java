@@ -1,4 +1,4 @@
-package fow.dmapp;
+package fow.app;
 
 public class MainScreen extends AbstractScreen {
 	

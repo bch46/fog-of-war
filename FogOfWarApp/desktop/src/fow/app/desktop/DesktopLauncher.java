@@ -1,8 +1,9 @@
-package fow.dmapp.desktop;
+package fow.app.desktop;
 
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import fow.dmapp.Main;
+
+import fow.app.Main;
 
 public class DesktopLauncher {
 	public static void main (String[] arg) {

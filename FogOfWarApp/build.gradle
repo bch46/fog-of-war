@@ -32,12 +32,16 @@ allprojects {
     }
 }
 
+project(":common") {
+	apply plugin: "java"
+}
+
 project(":core") {
     apply plugin: "java"
     
     dependencies {
+    	compile project(":common")
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
-        compile fileTree(dir: 'libs', include: '*.jar')
     }
 }
 

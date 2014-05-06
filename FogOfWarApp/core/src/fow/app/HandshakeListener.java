@@ -1,4 +1,4 @@
-package fow.dmapp;
+package fow.app;
 
 import fow.common.NetworkEvent;
 import fow.common.NetworkEvent.Type;

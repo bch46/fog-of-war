@@ -1,4 +1,4 @@
-package fow.dmapp;
+package fow.app;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;

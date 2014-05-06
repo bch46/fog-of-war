@@ -1,9 +1,10 @@
-package fow.dmapp.client;
+package fow.app.client;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.backends.gwt.GwtApplication;
 import com.badlogic.gdx.backends.gwt.GwtApplicationConfiguration;
-import fow.dmapp.Main;
+
+import fow.app.Main;
 
 public class HtmlLauncher extends GwtApplication {
 

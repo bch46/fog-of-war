@@ -1,4 +1,4 @@
-package fow.dmapp;
+package fow.app;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
