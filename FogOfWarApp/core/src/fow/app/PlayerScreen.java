@@ -1,6 +1,5 @@
 package fow.app;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
@@ -12,28 +11,38 @@ import fow.common.VisibilityLayer;
 
 public class PlayerScreen extends AbstractScreen {
 
-	private Texture texture;
-	private VisibilityLayer visibility;
-	
-	public PlayerScreen(Main game) {
-		super(game);
-		NetworkEventListener listener = new NetworkEventListener();
-		game.serverConnection.setOnReceiveNetworkEventListener(listener);
+    protected final PlayerMenu view;
 
-		texture = new Texture(Gdx.files.internal("gnome.gif"));
-	}
-	
-	private class NetworkEventListener extends HandshakeListener {
-		@Override
-		public void onReceiveNetworkEvent (final ServerConnection serverConnection,
-		             final NetworkEvent event) {
-		    super.onReceiveNetworkEvent(serverConnection, event);
-		    // Client should only ever receive this type of event
-		    if (event.getType().equals(Type.UPDATE_VISIBILITY)) {
-		        visibility = (VisibilityLayer) event.getData();
-		    }
-		}
-	}
+    private Texture texture;
+    private VisibilityLayer visibility;
+
+    private PlayerInputListener inputListener;
+
+    public PlayerScreen(Main game) {
+        super(game);
+        NetworkEventListener listener = new NetworkEventListener();
+        game.serverConnection.setOnReceiveNetworkEventListener(listener);
+
+        inputListener = new PlayerInputListener();
+
+        view = new PlayerMenu(this);
+        view.setBounds(0, 0, stage.getWidth(), 150);
+        view.addListener(inputListener);
+
+        stage.addActor(view);
+    }
+
+    private class NetworkEventListener extends HandshakeListener {
+        @Override
+        public void onReceiveNetworkEvent(final ServerConnection serverConnection,
+                final NetworkEvent event) {
+            super.onReceiveNetworkEvent(serverConnection, event);
+            // Client should only ever receive this type of event
+            if (event.getType().equals(Type.UPDATE_VISIBILITY)) {
+                visibility = (VisibilityLayer) event.getData();
+            }
+        }
+    }
 
     @Override
     public void render(float delta) {
