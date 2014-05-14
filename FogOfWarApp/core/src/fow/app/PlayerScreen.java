@@ -1,5 +1,6 @@
 package fow.app;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
@@ -13,7 +14,7 @@ public class PlayerScreen extends AbstractScreen {
 
     protected final PlayerMenu view;
 
-    private Texture texture;
+    private final Texture texture;
     private VisibilityLayer visibility;
 
     private PlayerInputListener inputListener;
@@ -26,10 +27,12 @@ public class PlayerScreen extends AbstractScreen {
         inputListener = new PlayerInputListener();
 
         view = new PlayerMenu(this);
-        view.setBounds(0, 0, stage.getWidth(), 150);
+        view.setBounds(0, 0, stage.getWidth(), 100);
         view.addListener(inputListener);
 
         stage.addActor(view);
+
+        texture = new Texture(Gdx.files.internal("gnome.gif"));
     }
 
     private class NetworkEventListener extends HandshakeListener {
