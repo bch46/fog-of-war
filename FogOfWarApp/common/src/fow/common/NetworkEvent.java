@@ -11,16 +11,16 @@ public class NetworkEvent implements Serializable {
      * 
      * PING - server<->client - null - Check for connection
      * 
-     * IDENTIFY - server->client - Short tempId - Ask client to send it's accountId along with
+     * IDENTIFY - server->client - Integer tempId - Ask client to send it's accountId along with
      * tempId
      * 
-     * IDENTIFY - client->server - Object[] {Short tempId, Integer accountId} - Send client identity
+     * IDENTIFY - client->server - Object[] {Integer tempId, Integer accountId} - Send client identity
      * in response to request
      * 
-     * CONFIRMED - server->client - Short gameId - Tell client handshake is confirmed and gives it
-     * it's gameId
+     * CONFIRMED - server->client - Boolean isDm - Tell client handshake is confirmed and if they are
+     * the DM
      * 
-     * DISCONNECT - server->server - Object[] {Boolean confirmed, Short id} - A ClientConnection
+     * DISCONNECT - server->server - Object[] {Boolean confirmed, Integer id} - A ClientConnection
      * informs the server that it is disconnected from the Client, gives it identifying information
      * to remove that connection
      * 
@@ -28,7 +28,7 @@ public class NetworkEvent implements Serializable {
      * 
      * DISCONNECT - client->client - null - Client lets itself know it's been disconnected
      * 
-     * IDLE - server->server - Object[] {Boolean confirmed, Short id} - A ClientConnection informs
+     * IDLE - server->server - Object[] {Boolean confirmed, Integer id} - A ClientConnection informs
      * the server that it client has been idle, gives it identifying information to handle pinging
      * that client
      * 
@@ -62,7 +62,7 @@ public class NetworkEvent implements Serializable {
     private Object data;
 
     /** id associated with ClientConnection */
-    private short id;
+    private int id;
 
     /**
      * Data can be an Object[], but numbers will be converted to doubles over the network.
@@ -83,7 +83,7 @@ public class NetworkEvent implements Serializable {
         return data;
     }
 
-    public short getGameId() {
+    public int getAccountId() {
         return id;
     }
 

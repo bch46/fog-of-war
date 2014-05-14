@@ -23,14 +23,14 @@ public class Server extends Thread {
 
     /** The length of time a client has to respond before the server cuts connection */
     private final static int TIMEOUT = 20000;
+    
+    private final static int MAX_PLAYERS = 50;
 
     private ServerSocket serverSocket;
-    protected final HashMap<Short, ClientConnection> unconfirmedClientConnections =
-            new HashMap<Short, ClientConnection>();
-    protected final HashMap<Short, ClientConnection> confirmedClientConnections =
-            new HashMap<Short, ClientConnection>();
-    /** A map from account id to game id */
-    protected HashMap<Integer, Short> gameIds = new HashMap<Integer, Short>();
+    protected final HashMap<Integer, ClientConnection> unconfirmedClientConnections =
+            new HashMap<Integer, ClientConnection>();
+    protected final HashMap<Integer, ClientConnection> confirmedClientConnections =
+            new HashMap<Integer, ClientConnection>();
 
     private LinkedBlockingQueue<NetworkEvent> eventQueue = new LinkedBlockingQueue<NetworkEvent>();
 
@@ -113,15 +113,14 @@ public class Server extends Thread {
      * Confirms a client. Protected so subclasses can respond to confirmations.
      * 
      * @param clientConnection The client connection to confirm
-     * @param gameId The generated gameId for this client
+     * @param accId The unique account ID of this client
      */
-    protected void confirmClient(final ClientConnection clientConnection, final short gameId, final boolean isDm) {
+    protected void confirmClient(final ClientConnection clientConnection, final int accId, final boolean isDm) {
     	clientConnection.setConfirmed(true);
-        clientConnection.setId(gameId);
+        clientConnection.setId(accId);
         clientConnection.setDm(isDm);
-        confirmedClientConnections.put(gameId, clientConnection);
-        Object[] data = {gameId, isDm};
-        clientConnection.sendEvent(new NetworkEvent(Type.CONFIRMED, data));
+        confirmedClientConnections.put(accId, clientConnection);
+        clientConnection.sendEvent(new NetworkEvent(Type.CONFIRMED, isDm));
     }
 
     /**
@@ -133,6 +132,13 @@ public class Server extends Thread {
         eventQueue.add(event);
     }
 
+    /**
+     * @return whether or not this server is at maximum capacity for players
+     */
+    public boolean isFull() {
+    	return confirmedClientConnections.size() >= MAX_PLAYERS;
+    }
+    
     /**
      * Kill the main event handling thread and connection listener thread.
      */

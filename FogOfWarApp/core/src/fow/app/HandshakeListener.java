@@ -35,21 +35,19 @@ public class HandshakeListener extends PingListener {
             serverConnection.sendEvent(new NetworkEvent(Type.IDENTIFY, new Object[] {
                     event.getData(), serverConnection.getAccountId()}));
         } else if (eventType.equals(Type.CONFIRMED)) {
-        	final Object[] data = (Object[]) event.getData();
-        	final short gameId = (Short) data[0];
-        	final boolean isDm = (Boolean) data[1];
-            serverConnection.setGameId(gameId);
+        	final boolean isDm = (Boolean) event.getData();
+        	serverConnection.setDm(isDm);
             if (onHandshakeResultListener != null)
-                onHandshakeResultListener.onHandshakeResult(serverConnection, true, isDm);
+                onHandshakeResultListener.onHandshakeResult(serverConnection, true);
         } else if (eventType.equals(Type.DUPLICATE_ACCOUNT)
                 || eventType.equals(Type.SERVER_FULL)) {
             // TODO (Ben) probably handle these differently to provide better feedback
             if (onHandshakeResultListener != null)
-                onHandshakeResultListener.onHandshakeResult(serverConnection, false, false);
+                onHandshakeResultListener.onHandshakeResult(serverConnection, false);
         }
     }
 
     public interface OnHandshakeResultListener {
-        public void onHandshakeResult(ServerConnection connection, boolean success, boolean isDm);
+        public void onHandshakeResult(ServerConnection connection, boolean success);
     }
 }

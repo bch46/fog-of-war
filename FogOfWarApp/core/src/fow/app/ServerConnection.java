@@ -35,7 +35,6 @@ public class ServerConnection {
 	private ObjectOutputStream out;
 
 	private int accountId;
-	private short gameId;
 	
 	private boolean isDm;
 
@@ -361,14 +360,6 @@ public class ServerConnection {
 
 	public int getAccountId() {
 		return accountId;
-	}
-
-	public void setGameId(final short gameId) {
-		this.gameId = gameId;
-	}
-
-	public short getGameId() {
-		return gameId;
 	}
 
 	public boolean isDm() {

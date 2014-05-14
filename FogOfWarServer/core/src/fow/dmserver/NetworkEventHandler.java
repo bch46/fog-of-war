@@ -24,7 +24,8 @@ public class NetworkEventHandler {
 		this.server = server;
 		this.debug = debug;
 
-		state = new GameState();
+		// TODO how to initialize
+		state = new GameState(800, 600);
 	}
 
 	public NetworkEventHandler(final Server server) {
@@ -63,97 +64,84 @@ public class NetworkEventHandler {
 	 */
 	private void handleNewConnection(final NetworkEvent newConnectionEvent) {
 		final Socket clientSocket = (Socket) newConnectionEvent.getData();
-		final Short tempClientId = getTemporaryClientId();
-		if (tempClientId != null) {
+		final int tempClientId = getTemporaryClientId();
+		if (tempClientId >= 0) {
 			final ClientConnection clientConnection = new ClientConnection(
 					server, clientSocket, tempClientId, debug);
 			server.unconfirmedClientConnections.put(tempClientId,
 					clientConnection);
 			clientConnection.sendEvent(new NetworkEvent(Type.IDENTIFY,
 					tempClientId));
-		} // else silently fuck over the 257th person trying to connect
+		} // this should never happen, have to more than Integer.MAX_VAL clients
 	}
 
 	/**
 	 * Gets a temporary id used for identifying unconfirmed connections.
 	 * 
-	 * @return The temporary id or null if there are too many clients trying to
+	 * @return The temporary id or -1 if there are too many clients trying to
 	 *         connect
 	 */
-	private Short getTemporaryClientId() {
-		for (short i = 0; i < 256; i++) {
+	private int getTemporaryClientId() {
+		for (int i = 0; i < Integer.MAX_VALUE; i++) {
 			if (!server.confirmedClientConnections.containsKey(i)) {
 				return i;
 			}
 		}
-		return null;
+		return -1;
 	}
 
-	/**
-	 * Handles the addition of a client to the game after they complete the
-	 * handshake. Graduates ClientConnections from unconfirmed to confirmed.
-	 * 
-	 * @param identifyEvent
-	 *            The event from the client used for identifying themselves
-	 */
-	private void handleIdentify(final NetworkEvent identifyEvent) {
-		final Object[] ids = (Object[]) identifyEvent.getData();
-		final Short tempClientId = ((Short) ids[0]);
-		final Integer accountId = ((Integer) ids[1]);
-		final Short gameId = getGameIdFromAccountId(accountId);
-		if (gameId != null) {
-			if (server.confirmedClientConnections.containsKey(gameId)) {
-				final ClientConnection clientConnection = server.unconfirmedClientConnections
-						.get(tempClientId);
-				if (clientConnection != null) {
-					clientConnection.sendEvent(new NetworkEvent(
-							Type.DUPLICATE_ACCOUNT, null));
-					clientConnection.kill();
-				}
-			} else {
-				final ClientConnection clientConnection = server.unconfirmedClientConnections
-						.remove(tempClientId);
-				if (clientConnection != null) {
-					// TODO this is a temporary hack
-					if (state.getDmId() < 0 || state.getDmId() == accountId.intValue()) {
-						System.out.println("DM joined with account id "+accountId);
-						state.setDmId(accountId);
-						server.confirmClient(clientConnection, gameId, true);
-					} else {
-						System.out.println("PC joined with account id "+accountId);
-						server.confirmClient(clientConnection, gameId, false);
-					}
-				} // else some client is doing something weird
-			}
-		} else {
-			// Max number of clients reached for this server
-			final ClientConnection clientConnection = server.unconfirmedClientConnections
-					.get(tempClientId);
-			if (clientConnection != null) {
-				clientConnection.sendEvent(new NetworkEvent(Type.SERVER_FULL,
-						null));
-				clientConnection.kill();
-			}
-		}
-	}
-
-	/**
-	 * Gets a game id used for identifying confirmed connections.
-	 * 
-	 * @return The game id or null if there are too many clients in the game
-	 */
-	private Short getGameIdFromAccountId(final int accountId) {
-		if (server.gameIds.containsKey(accountId)) {
-			return server.gameIds.get(accountId);
-		}
-		for (short i = 0; i < 256; i++) {
-			if (!server.confirmedClientConnections.containsKey(i)) {
-				server.gameIds.put(accountId, i);
-				return i;
-			}
-		}
-		return null;
-	}
+    /**
+     * Handles the addition of a client to the game after they complete the handshake. Graduates
+     * ClientConnections from unconfirmed to confirmed.
+     * 
+     * @param identifyEvent The event from the client used for identifying themselves
+     */
+    private void handleIdentify(final NetworkEvent identifyEvent) {
+        final Object[] ids = (Object[]) identifyEvent.getData();
+        final Integer tempClientId = ((Integer) ids[0]);
+        final Integer accountId = ((Integer) ids[1]);
+        
+        if (!server.isFull()) {
+            if (server.confirmedClientConnections.containsKey(accountId)) {
+                final ClientConnection clientConnection =
+                        server.unconfirmedClientConnections.get(tempClientId);
+                if (clientConnection != null) {
+                    clientConnection.sendEvent(new NetworkEvent(Type.DUPLICATE_ACCOUNT, null));
+                    clientConnection.kill();
+                }
+            } else {
+                final ClientConnection clientConnection =
+                        server.unconfirmedClientConnections.remove(tempClientId);
+                if (clientConnection != null) {
+                    // TODO this is a temporary hack
+                    if (state.getDmId() < 0 || state.getDmId() == accountId.intValue()) {
+                        System.out.println("DM joined with account id " + accountId);
+                        state.setDmId(accountId);
+                        server.confirmClient(clientConnection, accountId, true);
+                    } else {
+                        System.out.println("PC joined with account id " + accountId);
+                        server.confirmClient(clientConnection, accountId, false);
+                        
+                        // If this is a new player, add it to the game state
+                        if (!state.containsPlayer(accountId)) {
+                            state.addNewPlayer(accountId);
+                        }
+                        // Send the client its visibility layer
+                        clientConnection.sendEvent(new NetworkEvent(Type.UPDATE_VISIBILITY, state
+                                .getPlayerVisibility(accountId)));
+                    }
+                } // else some client is doing something weird
+            }
+        } else {
+            // Max number of clients reached for this server
+            final ClientConnection clientConnection =
+                    server.unconfirmedClientConnections.get(tempClientId);
+            if (clientConnection != null) {
+                clientConnection.sendEvent(new NetworkEvent(Type.SERVER_FULL, null));
+                clientConnection.kill();
+            }
+        }
+    }
 
 	/**
 	 * Handles an idle ClientConnection by pinging it.
@@ -165,7 +153,7 @@ public class NetworkEventHandler {
 	private void handleIdle(final NetworkEvent idleEvent) {
 		final Object[] identity = (Object[]) idleEvent.getData();
 		final boolean confirmed = (Boolean) identity[0];
-		final Short id = (Short) identity[1];
+		final Integer id = (Integer) identity[1];
 
 		if (confirmed) {
 			final ClientConnection clientConnection = server.confirmedClientConnections
@@ -187,7 +175,7 @@ public class NetworkEventHandler {
 	private void handleDisconnect(final NetworkEvent disconnectEvent) {
 		final Object[] identity = (Object[]) disconnectEvent.getData();
 		final boolean confirmed = (Boolean) identity[0];
-		final Short id = (Short) identity[1];
+		final Integer id = (Integer) identity[1];
 		final ClientConnection clientConnection = confirmed ? server.confirmedClientConnections
 				.remove(id) : server.unconfirmedClientConnections.remove(id);
 		if (clientConnection != null) {

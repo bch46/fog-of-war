@@ -25,7 +25,7 @@ public class ClientConnection {
     private boolean alive;
     private boolean idle;
     private boolean confirmed;
-    private short id;
+    private int id;
     
     private boolean isDm;
 
@@ -38,7 +38,7 @@ public class ClientConnection {
      * @param server The server associated with this ClientConnection.
      * @param socket The socket this ClientConnection reads from and writes to.
      */
-    public ClientConnection(final Server server, final Socket socket, final short id) {
+    public ClientConnection(final Server server, final Socket socket, final int id) {
         this.id = id;
         this.server = server;
         this.socket = socket;
@@ -62,7 +62,7 @@ public class ClientConnection {
      * @param debug If we should print information to the console about sent events.
      * @author Jeran
      */
-    public ClientConnection(final Server server, final Socket socket, final short id,
+    public ClientConnection(final Server server, final Socket socket, final int id,
             final boolean debug) {
         this(server, socket, id);
         this.debug = debug;
@@ -172,15 +172,15 @@ public class ClientConnection {
 
     /**
      * On creation, the ClientConnection is given a temporary id. On completion of the handshake,
-     * the client is given a gameId.
+     * the ClientConnection stores its client's accountId.
      * 
-     * @param gameId The gameId for the client tied to an accountId
+     * @param accId The accoundId of the client
      */
-    public void setId(final short gameId) {
-        id = gameId;
+    public void setId(final int accId) {
+        id = accId;
     }
 
-    public short getId() {
+    public int getId() {
         return id;
     }
     

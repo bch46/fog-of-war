@@ -61,10 +61,9 @@ public class MainScreen extends AbstractScreen {
 			super(new HandshakeListener.OnHandshakeResultListener() {
 				@Override
 				public void onHandshakeResult(ServerConnection connection,
-						boolean success, boolean isDm) {
+						boolean success) {
 					connection.setOnReceiveNetworkEventListener(null);
 					if (success) {
-						connection.setDm(isDm);
 						game.serverConnection = connection;
 					} else {
 						// TODO provide user feedback
