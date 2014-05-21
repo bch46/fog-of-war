@@ -20,16 +20,16 @@ public class PlayerMenu extends Table {
 		this.add(new Label("Welcome, player!", skin));
 		this.row();
 
-		TextButton submitButton = new TextButton("Submit move", skin);
+		final TextButton submitButton = new TextButton("Submit move", skin);
 		submitButton.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				// TODO send move request
+				PlayerMenu.this.controller.sendMoveRequest();
 			}
 		});
-		this.add(submitButton);
+        this.add(submitButton);
 	}
-
+	
 	public void dispose() {
 		skin.dispose();
 	}

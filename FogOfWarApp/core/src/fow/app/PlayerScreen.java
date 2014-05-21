@@ -1,38 +1,53 @@
 package fow.app;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-
 import fow.common.NetworkEvent;
 import fow.common.NetworkEvent.Type;
-import fow.common.PlayerState;
-import fow.common.PositionTuple;
 import fow.common.VisibilityLayer;
 
 public class PlayerScreen extends AbstractScreen {
 
-    protected final PlayerMenu view;
+    protected final PlayerMenu menuView;
+    protected final MapView mapView;
 
-    private final Texture texture;
-    private VisibilityLayer visibility;
-
-    private PlayerInputListener inputListener;
+    private static final int MENU_HEIGHT = 80;
 
     public PlayerScreen(Main game) {
         super(game);
-        NetworkEventListener listener = new NetworkEventListener();
-        game.serverConnection.setOnReceiveNetworkEventListener(listener);
 
-        inputListener = new PlayerInputListener();
+        menuView = new PlayerMenu(this);
+        mapView = new MapView();
 
-        view = new PlayerMenu(this);
-        view.setBounds(0, 0, stage.getWidth(), 100);
-        view.addListener(inputListener);
+        stage.addActor(menuView);
+    }
+    
+    @Override
+    public void resize(int width, int height) {
+        super.resize(width, height);
+        menuView.setBounds(0, 0, width, MENU_HEIGHT);
+        mapView.setCameraBounds(width, height - MENU_HEIGHT);
+    }
 
-        stage.addActor(view);
+    @Override
+    public void show() {
+        super.show();
+        game.serverConnection.setOnReceiveNetworkEventListener(new NetworkEventListener());
+    }
 
-        texture = new Texture(Gdx.files.internal("gnome.gif"));
+    @Override
+    public void render(float delta) {
+        super.render(delta);
+        mapView.render(this);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        menuView.dispose();
+    }
+
+    public void sendMoveRequest() {
+        NetworkEvent evt = new NetworkEvent(Type.REQUEST_MOVE, mapView.getCurrentPlayerPosition());
+        game.serverConnection.sendEvent(new NetworkEvent(Type.REQUEST_MOVE, evt));
     }
 
     private class NetworkEventListener extends HandshakeListener {
@@ -42,23 +57,8 @@ public class PlayerScreen extends AbstractScreen {
             super.onReceiveNetworkEvent(serverConnection, event);
             // Client should only ever receive this type of event
             if (event.getType().equals(Type.UPDATE_VISIBILITY)) {
-                visibility = (VisibilityLayer) event.getData();
+                mapView.updateVisibility((VisibilityLayer) event.getData());
             }
-        }
-    }
-
-    @Override
-    public void render(float delta) {
-        super.render(delta);
-
-        if (visibility != null) {
-            SpriteBatch batch = getBatch();
-            batch.begin();
-            for (PlayerState player : visibility.getPlayers()) {
-                PositionTuple curPos = player.path[player.path.length - 1];
-                batch.draw(texture, curPos.x, curPos.y);
-            }
-            batch.end();
         }
     }
 }

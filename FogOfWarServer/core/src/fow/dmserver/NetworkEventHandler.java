@@ -25,7 +25,7 @@ public class NetworkEventHandler {
 		this.debug = debug;
 
 		// TODO how to initialize
-		state = new GameState(800, 600);
+		state = new GameState(Constants.DEFAULT_LEVEL_WIDTH, Constants.DEFAULT_LEVEL_HEIGHT);
 	}
 
 	public NetworkEventHandler(final Server server) {

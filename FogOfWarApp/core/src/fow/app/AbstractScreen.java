@@ -10,6 +10,8 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 /**
  * The base class for all game screens. Adapted from
@@ -41,6 +43,9 @@ public abstract class AbstractScreen implements Screen {
 		// int height = ( isGameScreen() ? GAME_VIEWPORT_HEIGHT :
 		// MENU_VIEWPORT_HEIGHT );
 		this.stage = new Stage();
+		
+		Viewport viewport = new ScreenViewport(this.stage.getCamera());   
+		this.stage.setViewport(viewport);
 		
 		this.nextScreen = null;
 		this.toNextScreen = false;
@@ -112,6 +117,7 @@ public abstract class AbstractScreen implements Screen {
 	public void resize(int width, int height) {
 		Gdx.app.log(Main.LOG, "Resizing screen: " + getName() + " to: " + width
 				+ " x " + height);
+		stage.getViewport().update(width, height, true);
 	}
 
 	@Override
