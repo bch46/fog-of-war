@@ -1,6 +1,7 @@
 package fow.app;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
@@ -26,6 +27,7 @@ public abstract class AbstractScreen implements Screen {
 
 	protected final Main game;
 	protected final Stage stage;
+	protected final InputMultiplexer multiplexer;
 	
 	protected Screen nextScreen;
 	protected boolean toNextScreen;
@@ -42,13 +44,16 @@ public abstract class AbstractScreen implements Screen {
 		// MENU_VIEWPORT_WIDTH );
 		// int height = ( isGameScreen() ? GAME_VIEWPORT_HEIGHT :
 		// MENU_VIEWPORT_HEIGHT );
-		this.stage = new Stage();
+		stage = new Stage();
 		
-		Viewport viewport = new ScreenViewport(this.stage.getCamera());   
-		this.stage.setViewport(viewport);
+		Viewport viewport = new ScreenViewport(stage.getCamera());   
+		stage.setViewport(viewport);
+
+        multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(stage);
 		
-		this.nextScreen = null;
-		this.toNextScreen = false;
+		nextScreen = null;
+		toNextScreen = false;
 	}
 
 	protected String getName() {
@@ -108,9 +113,8 @@ public abstract class AbstractScreen implements Screen {
 	@Override
 	public void show() {
 		Gdx.app.log(Main.LOG, "Showing screen: " + getName());
-
-		// set the stage as the input processor
-		Gdx.input.setInputProcessor(stage);
+		
+        Gdx.input.setInputProcessor(multiplexer);
 	}
 
 	@Override
