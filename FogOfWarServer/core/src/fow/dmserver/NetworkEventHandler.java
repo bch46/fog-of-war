@@ -121,7 +121,11 @@ public class NetworkEventHandler {
                         System.out.println("DM joined with account id " + accountId);
                         state.setDmId(accountId);
                         server.confirmClient(clientConnection, accountId, true);
-                        
+
+                        // Send the DM the current visibilities
+                        sendEventToDm(new NetworkEvent(Type.UPDATE_VISIBILITY,
+                                state.getPlayerVisibilities()));
+
                         // Send the DM any pending move requests
                         sendEventToDm(new NetworkEvent(Type.REQUEST_MOVE, pendingRequests));
                     } else {

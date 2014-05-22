@@ -123,8 +123,7 @@ public class MasterScreen extends AbstractScreen {
             if (event.getType().equals(Type.UPDATE_VISIBILITY)) {
                 visibilities = (HashMap<Integer, VisibilityLayer>) event.getData();
                 menuView.updateVisibilities(visibilities);
-                if (selectedPlayer == null) {
-                    System.out.println("SELECTING FIRST PLAYER");
+                if (selectedPlayer == null && !visibilities.isEmpty()) {
                     menuView.selectFirstPlayer();
                 }
             }
