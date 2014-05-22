@@ -294,6 +294,7 @@ public class ServerConnection {
      * @param event The event to send
      */
     public void sendEvent(final NetworkEvent event) {
+        event.setAccountId(accountId);
         outEventQueue.add(event);
     }
 

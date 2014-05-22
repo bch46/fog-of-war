@@ -90,7 +90,7 @@ public class PlayerScreen extends AbstractScreen {
      */
     public void sendMoveRequest() {
         NetworkEvent evt = new NetworkEvent(Type.REQUEST_MOVE, mapView.getCurrentPlayerPosition());
-        game.serverConnection.sendEvent(new NetworkEvent(Type.REQUEST_MOVE, evt));
+        game.serverConnection.sendEvent(evt);
     }
 
     private class NetworkEventListener extends HandshakeListener {

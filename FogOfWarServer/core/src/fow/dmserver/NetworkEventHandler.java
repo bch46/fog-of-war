@@ -1,9 +1,12 @@
 package fow.dmserver;
 
+import java.util.HashMap;
+
 import com.badlogic.gdx.net.Socket;
 
 import fow.common.NetworkEvent;
 import fow.common.NetworkEvent.Type;
+import fow.common.PositionTuple;
 import fow.common.VisibilityLayer;
 
 /**
@@ -19,6 +22,8 @@ public class NetworkEventHandler {
 
     private final GameState state;
 
+    private final HashMap<Integer, PositionTuple> pendingRequests;
+
     private boolean debug;
 
     public NetworkEventHandler(final Server server, final boolean debug) {
@@ -27,6 +32,8 @@ public class NetworkEventHandler {
 
         // TODO how to initialize
         state = new GameState(Constants.DEFAULT_LEVEL_WIDTH, Constants.DEFAULT_LEVEL_HEIGHT);
+
+        pendingRequests = new HashMap<Integer, PositionTuple>();
     }
 
     public NetworkEventHandler(final Server server) {
@@ -109,11 +116,14 @@ public class NetworkEventHandler {
                 final ClientConnection clientConnection =
                         server.unconfirmedClientConnections.remove(tempClientId);
                 if (clientConnection != null) {
-                    // TODO this is a temporary hack
+                    // TODO this is a bit of a hack, first player who joins is the DM
                     if (state.getDmId() < 0 || state.getDmId() == accountId.intValue()) {
                         System.out.println("DM joined with account id " + accountId);
                         state.setDmId(accountId);
                         server.confirmClient(clientConnection, accountId, true);
+                        
+                        // Send the DM any pending move requests
+                        sendEventToDm(new NetworkEvent(Type.REQUEST_MOVE, pendingRequests));
                     } else {
                         System.out.println("PC joined with account id " + accountId);
                         server.confirmClient(clientConnection, accountId, false);
@@ -185,7 +195,10 @@ public class NetworkEventHandler {
      * @param e The event holding a request to move one character to a given location
      */
     private void handleRequestMove(final NetworkEvent e) {
-        // TODO implement!
+        pendingRequests.put(e.getAccountId(), (PositionTuple) (e.getData()));
+
+        // If DM is connected, let them know of the new request
+        sendEventToDm(new NetworkEvent(Type.REQUEST_MOVE, pendingRequests));
     }
 
     /**
@@ -193,23 +206,25 @@ public class NetworkEventHandler {
      * the DM is connected, send him all of the updates
      */
     private void updateAllVisibilities() {
-        ClientConnection dmClient = null;
-
         // Send updates to every active client (skipping the DM)
         for (ClientConnection client : server.confirmedClientConnections.values()) {
-            if (client.isDm()) {
-                dmClient = client;
-            } else {
+            if (!client.isDm()) {
                 VisibilityLayer vl = state.getPlayerVisibility(client.getId());
-                System.out.println("updating visibility with players: "+vl.getPlayers().length);
                 client.sendEvent(new NetworkEvent(Type.UPDATE_VISIBILITY, vl));
             }
         }
-        
+
         // If the DM is connected, send an update with all visibilities
-        if (dmClient != null) {
-            dmClient.sendEvent(new NetworkEvent(Type.UPDATE_VISIBILITY, state
-                    .getPlayerVisibilities()));
+        sendEventToDm(new NetworkEvent(Type.UPDATE_VISIBILITY, state.getPlayerVisibilities()));
+    }
+
+    private boolean sendEventToDm(NetworkEvent event) {
+        if (server.confirmedClientConnections.containsKey(state.getDmId())) {
+            ClientConnection dmClient = server.confirmedClientConnections.get(state.getDmId());
+            dmClient.sendEvent(event);
+            return true;
+        } else {
+            return false;
         }
     }
 

@@ -28,7 +28,7 @@ public class MapView extends Stage {
 
     // This is essentially the state, as provided by the server
     protected VisibilityLayer visibility;
-    
+
     // This player's index in the VisibilityLayer's players array, for convenience
     private int myIndex;
 
@@ -57,7 +57,7 @@ public class MapView extends Stage {
         camera = (OrthographicCamera) getCamera();
 
         texture = new Texture(Gdx.files.internal("gnome.gif"));
-        
+
         // So it will throw out of bounds exception if used improperly
         myIndex = -1;
 
@@ -76,7 +76,6 @@ public class MapView extends Stage {
      */
     public void updateVisibility(int accId, VisibilityLayer visibility) {
         this.visibility = visibility;
-        System.out.println("NUM PLAYERS: "+visibility.getPlayers().length);
         for (int i = 0; i < visibility.getPlayers().length; i++) {
             PlayerState p = visibility.getPlayers()[i];
             if (p.id == accId) {
@@ -130,6 +129,10 @@ public class MapView extends Stage {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        if (visibility == null) {
+            return false;
+        }
+
         int halfWidth = texture.getWidth() / 2;
         int halfHeight = texture.getHeight() / 2;
 
@@ -148,6 +151,10 @@ public class MapView extends Stage {
 
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
+        if (visibility == null) {
+            return false;
+        }
+
         if (dragging) {
             dragEndPoint.set(screenToStageCoordinates(new Vector2(screenX, screenY)));
         }
@@ -157,22 +164,30 @@ public class MapView extends Stage {
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        if (visibility == null) {
+            return false;
+        }
+
         if (dragging) {
             PositionTuple curPos = visibility.getPlayerPosition(myIndex);
             int newX = curPos.x + (int) (dragEndPoint.x - dragStartPoint.x);
             int newY = curPos.y + (int) (dragEndPoint.y - dragStartPoint.y);
             visibility.setPlayerPosition(myIndex, new PositionTuple(newX, newY));
-            
+
             dragStartPoint.set(0, 0);
             dragEndPoint.set(0, 0);
             dragging = false;
         }
-        
+
         return super.touchUp(screenX, screenY, pointer, button);
     }
 
     @Override
     public boolean keyDown(int keyCode) {
+        if (visibility == null) {
+            return false;
+        }
+
         if (keyCode == Input.Keys.A) {
             zoomFactor += CAM_ZOOM_AMT;
         }
@@ -196,6 +211,10 @@ public class MapView extends Stage {
 
     @Override
     public boolean keyUp(int keyCode) {
+        if (visibility == null) {
+            return false;
+        }
+
         if (keyCode == Input.Keys.A) {
             zoomFactor -= CAM_ZOOM_AMT;
         }

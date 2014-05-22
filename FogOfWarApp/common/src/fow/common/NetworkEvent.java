@@ -86,6 +86,10 @@ public class NetworkEvent implements Serializable {
     public int getAccountId() {
         return id;
     }
+    
+    public void setAccountId(int id) {
+        this.id = id;
+    }
 
     @Override
     public String toString() {
