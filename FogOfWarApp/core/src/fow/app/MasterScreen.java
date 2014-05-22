@@ -84,6 +84,9 @@ public class MasterScreen extends AbstractScreen {
         if (visibilities.containsKey(selectedPlayer)) {
             mapView.updateVisibility(selectedPlayer.intValue(), visibilities.get(selectedPlayer));
             
+            // This works properly whether moveRequests.get(selectedPlayer) returns null or not
+            mapView.updatePreviewLocation(moveRequests.get(selectedPlayer));
+            
             // Set the viewport for the map view
             // Although they update the same viewport, this class allows us to set the x and y offsets
             MapViewport viewport = (MapViewport) mapView.getViewport();

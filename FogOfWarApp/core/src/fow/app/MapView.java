@@ -2,6 +2,7 @@ package fow.app;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -44,6 +45,8 @@ public class MapView extends Stage {
     // Used for sliding and zooming the camera
     private Vector2 camTranslation;
     private float zoomFactor;
+    
+    private PositionTuple previewLocation;
 
     /**
      * Default constructor, initializes fields to default values
@@ -75,6 +78,9 @@ public class MapView extends Stage {
      * @param visibility
      */
     public void updateVisibility(int accId, VisibilityLayer visibility) {
+        if (visibility.equals(this.visibility)) {
+            return;
+        }
         this.visibility = visibility;
         for (int i = 0; i < visibility.getPlayers().length; i++) {
             PlayerState p = visibility.getPlayers()[i];
@@ -88,6 +94,10 @@ public class MapView extends Stage {
 
         // Try to center the camera on the player
         camera.position.set(pos.x, pos.y, 0);
+    }
+    
+    public void updatePreviewLocation(PositionTuple previewLocation) {
+        this.previewLocation = previewLocation;
     }
 
     public PositionTuple getCurrentPlayerPosition() {
@@ -108,6 +118,9 @@ public class MapView extends Stage {
 
         // Only attempt to draw the world if we have a visibility layer to work from
         if (visibility != null) {
+            Batch batch = getSpriteBatch();
+            batch.begin();
+            
             for (int i = 0; i < visibility.getNumPlayers(); i++) {
                 PositionTuple currentPos = visibility.getPlayerPosition(i);
 
@@ -119,11 +132,19 @@ public class MapView extends Stage {
                     dy += dragEndPoint.y - dragStartPoint.y;
                 }
 
-                Batch batch = getSpriteBatch();
-                batch.begin();
                 batch.draw(texture, dx, dy, texture.getHeight(), texture.getWidth());
-                batch.end();
             }
+            
+            if (previewLocation != null) {
+                int dx = previewLocation.x - texture.getWidth() / 2;
+                int dy = previewLocation.y - texture.getHeight() / 2;
+                
+                batch.setColor(Color.RED);
+                batch.draw(texture, dx, dy, texture.getHeight(), texture.getWidth());
+                batch.setColor(Color.WHITE);
+            }
+
+            batch.end();
         }
     }
 
