@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.GL20;
 
 import fow.app.network.HandshakeListener;
 import fow.app.network.ServerConnection;
+import fow.common.MoveRequest;
 import fow.common.NetworkEvent;
 import fow.common.NetworkEvent.Type;
 import fow.common.PositionTuple;
@@ -20,7 +21,7 @@ public class MasterScreen extends AbstractScreen {
     private static final int MENU_HEIGHT = 80;
     
     private HashMap<Integer, VisibilityLayer> visibilities;
-    private HashMap<Integer, PositionTuple> moveRequests;
+    private HashMap<Integer, PositionTuple> pendingRequests;
     
     // The id of the player whose visibility we want to show
     private Integer selectedPlayer;
@@ -44,7 +45,7 @@ public class MasterScreen extends AbstractScreen {
         multiplexer.addProcessor(mapView);
 
         visibilities = new HashMap<Integer, VisibilityLayer>();
-        moveRequests = new HashMap<Integer, PositionTuple>();
+        pendingRequests = new HashMap<Integer, PositionTuple>();
     }
 
     @Override
@@ -84,8 +85,8 @@ public class MasterScreen extends AbstractScreen {
         if (visibilities.containsKey(selectedPlayer)) {
             mapView.updateVisibility(selectedPlayer.intValue(), visibilities.get(selectedPlayer));
             
-            // This works properly whether moveRequests.get(selectedPlayer) returns null or not
-            mapView.updatePreviewLocation(moveRequests.get(selectedPlayer));
+            // This works properly whether pendingRequests.get(selectedPlayer) returns null or not
+            mapView.setPreviewLocation(pendingRequests.get(selectedPlayer));
             
             // Set the viewport for the map view
             // Although they update the same viewport, this class allows us to set the x and y offsets
@@ -104,24 +105,15 @@ public class MasterScreen extends AbstractScreen {
         mapView.dispose();
     }
 
-    /**
-     * Send a request to the server for this player to move. The desired location is pulled from the
-     * map view (which is specified by user input).
-     */
-    public void sendMoveRequest() {
-        NetworkEvent evt = new NetworkEvent(Type.REQUEST_MOVE, mapView.getCurrentPlayerPosition());
-        game.serverConnection.sendEvent(evt);
-    }
-
     private class NetworkEventListener extends HandshakeListener {
         @Override
         public void onReceiveNetworkEvent(final ServerConnection serverConnection,
                 final NetworkEvent event) {
             super.onReceiveNetworkEvent(serverConnection, event);
             if (event.getType().equals(Type.REQUEST_MOVE)) {
-                moveRequests = (HashMap<Integer, PositionTuple>) event.getData();
-                menuView.updateNumPendingRequests(moveRequests.size());
-                menuView.setButtonsVisible(moveRequests.containsKey(selectedPlayer));
+                pendingRequests = (HashMap<Integer, PositionTuple>) event.getData();
+                menuView.updateNumPendingRequests(pendingRequests.size());
+                menuView.setButtonsVisible(pendingRequests.containsKey(selectedPlayer));
             }
             if (event.getType().equals(Type.UPDATE_VISIBILITY)) {
                 visibilities = (HashMap<Integer, VisibilityLayer>) event.getData();
@@ -134,11 +126,17 @@ public class MasterScreen extends AbstractScreen {
     }
 	
 	public void onMoveRequestDecision(boolean approved) {
-	    // TODO
+	    if (approved) {	        
+	        MoveRequest move = new MoveRequest(selectedPlayer, mapView.getPreviewLocation());
+	        game.serverConnection.sendEvent(new NetworkEvent(Type.REQUEST_MOVE, move));
+	    } else {
+            MoveRequest move = new MoveRequest(selectedPlayer, mapView.getCurrentPlayerPosition());
+            game.serverConnection.sendEvent(new NetworkEvent(Type.REQUEST_MOVE, move));
+	    }
 	}
 
 	public void setSelectedPlayer(Integer id) {
 	    selectedPlayer = id;
-	    menuView.setButtonsVisible(moveRequests.containsKey(id));
+	    menuView.setButtonsVisible(pendingRequests.containsKey(id));
 	}
 }

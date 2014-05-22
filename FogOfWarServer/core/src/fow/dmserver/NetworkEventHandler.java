@@ -1,12 +1,10 @@
 package fow.dmserver;
 
-import java.util.HashMap;
-
 import com.badlogic.gdx.net.Socket;
 
+import fow.common.MoveRequest;
 import fow.common.NetworkEvent;
 import fow.common.NetworkEvent.Type;
-import fow.common.PositionTuple;
 import fow.common.VisibilityLayer;
 
 /**
@@ -22,8 +20,6 @@ public class NetworkEventHandler {
 
     private final GameState state;
 
-    private final HashMap<Integer, PositionTuple> pendingRequests;
-
     private boolean debug;
 
     public NetworkEventHandler(final Server server, final boolean debug) {
@@ -32,8 +28,6 @@ public class NetworkEventHandler {
 
         // TODO how to initialize
         state = new GameState(Constants.DEFAULT_LEVEL_WIDTH, Constants.DEFAULT_LEVEL_HEIGHT);
-
-        pendingRequests = new HashMap<Integer, PositionTuple>();
     }
 
     public NetworkEventHandler(final Server server) {
@@ -127,7 +121,7 @@ public class NetworkEventHandler {
                                 state.getPlayerVisibilities()));
 
                         // Send the DM any pending move requests
-                        sendEventToDm(new NetworkEvent(Type.REQUEST_MOVE, pendingRequests));
+                        sendEventToDm(new NetworkEvent(Type.REQUEST_MOVE, state.pendingRequests));
                     } else {
                         System.out.println("PC joined with account id " + accountId);
                         server.confirmClient(clientConnection, accountId, false);
@@ -137,7 +131,7 @@ public class NetworkEventHandler {
                             state.addNewPlayer(accountId);
                         }
                         // Since a new player joined, we want to update everyone's visibilities
-                        updateAllVisibilities();
+                        sendAllVisibilityUpdates();
                     }
                 } // else some client is doing something weird
             }
@@ -199,17 +193,40 @@ public class NetworkEventHandler {
      * @param e The event holding a request to move one character to a given location
      */
     private void handleRequestMove(final NetworkEvent e) {
-        pendingRequests.put(e.getAccountId(), (PositionTuple) (e.getData()));
+        MoveRequest move = (MoveRequest) e.getData();
+        if (e.getAccountId() == state.getDmId()) {
+            // DM can move anybody
+            state.getPlayer(move.getId()).changePosition(move.getMoveLocation());
+            
+            // Recompute all visibilities since a player has been moved
+            state.recomputeAllVisibilities();
+            
+            // Remove this or any other pending requests for this player
+            state.pendingRequests.remove(move.getId());
 
-        // If DM is connected, let them know of the new request
-        sendEventToDm(new NetworkEvent(Type.REQUEST_MOVE, pendingRequests));
+            // Let DM know the request has been handled
+            sendEventToDm(new NetworkEvent(Type.REQUEST_MOVE, state.pendingRequests));
+            
+            // Let everyone know of the new visibilities
+            sendAllVisibilityUpdates();
+        } else if (e.getAccountId() == move.getId()){
+            System.out.println("Received request to move to "+move.getMoveLocation());
+            // player is requesting to move itself
+            state.pendingRequests.put(e.getAccountId(), move.getMoveLocation());
+
+            // If DM is connected, let them know of the new request
+            sendEventToDm(new NetworkEvent(Type.REQUEST_MOVE, state.pendingRequests));
+        } else {
+            // player requesting to move someone else, currently not allowed
+            // in the future this could allow for moving familiars, etc
+        }
     }
 
     /**
      * For every client that is currently connected, send them their most up-to-date visibility. If
      * the DM is connected, send him all of the updates
      */
-    private void updateAllVisibilities() {
+    private void sendAllVisibilityUpdates() {
         // Send updates to every active client (skipping the DM)
         for (ClientConnection client : server.confirmedClientConnections.values()) {
             if (!client.isDm()) {
@@ -222,6 +239,11 @@ public class NetworkEventHandler {
         sendEventToDm(new NetworkEvent(Type.UPDATE_VISIBILITY, state.getPlayerVisibilities()));
     }
 
+    /**
+     * Tries to send an event to the DM app
+     * @param event
+     * @return false if DM is not currently connected
+     */
     private boolean sendEventToDm(NetworkEvent event) {
         if (server.confirmedClientConnections.containsKey(state.getDmId())) {
             ClientConnection dmClient = server.confirmedClientConnections.get(state.getDmId());
@@ -230,6 +252,22 @@ public class NetworkEventHandler {
         } else {
             return false;
         }
+    }
+    
+    /**
+     * Tries to send an event to all of the PC apps
+     * @param event
+     * @return false if no PC apps are currently connected
+     */
+    private boolean sendEventToPlayers(NetworkEvent event) {
+        boolean foundPlayer = false;
+        for (ClientConnection client : server.confirmedClientConnections.values()) {
+            if (!client.isDm()) {
+                foundPlayer = true;
+                client.sendEvent(event);
+            }
+        }
+        return foundPlayer;
     }
 
 }

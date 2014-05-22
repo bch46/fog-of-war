@@ -99,34 +99,4 @@ public class VisibilityLayer implements Serializable {
 	public int getNumPlayers() {
 	    return players.length;
 	}
-	
-	/**
-	 * Gets the current position of the ith player in the players array
-	 * @param i the index in the players array
-	 * @return the desired position
-	 */
-	public PositionTuple getPlayerPosition(int i) {
-	    return players[i].path[0];
-	}
-	
-	/**
-	 * Sets the position of the ith player in the players array
-	 * @param i the index in the players array
-	 * @param pos the desired position
-	 */
-	public void setPlayerPosition(int i, PositionTuple pos) {
-	    // Create a new array to hold the old one, plus another element
-	    PositionTuple[] curPath = players[i].path;
-	    PositionTuple[] newPath = new PositionTuple[curPath.length+1];
-	    
-	    // Add new element at front
-	    newPath[0] = pos;
-	    
-	    // Fill in the old path
-	    for (int j = 0; j < curPath.length; j++) {
-	        newPath[j+1] = curPath[j];
-	    }
-	    
-	    players[i].path = newPath;
-	}
 }

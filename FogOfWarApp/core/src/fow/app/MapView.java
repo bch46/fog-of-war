@@ -17,7 +17,7 @@ import fow.common.VisibilityLayer;
 public class MapView extends Stage {
 
     // Camera constants for pan and zoom speed
-    private static final int CAM_PAN_AMT = 3;
+    private static final int CAM_PAN_AMT = 5;
     private static final float CAM_ZOOM_AMT = 0.05f;
 
     // Reference to this stage's camera, but cast to an OrthographicCamera
@@ -45,7 +45,7 @@ public class MapView extends Stage {
     // Used for sliding and zooming the camera
     private Vector2 camTranslation;
     private float zoomFactor;
-    
+
     private PositionTuple previewLocation;
 
     /**
@@ -81,7 +81,10 @@ public class MapView extends Stage {
         if (visibility.equals(this.visibility)) {
             return;
         }
+
         this.visibility = visibility;
+
+        // Find where this player is in the list
         for (int i = 0; i < visibility.getPlayers().length; i++) {
             PlayerState p = visibility.getPlayers()[i];
             if (p.id == accId) {
@@ -89,19 +92,27 @@ public class MapView extends Stage {
             }
         }
 
-        // This player's character should be first in the list
-        PositionTuple pos = visibility.getPlayerPosition(myIndex);
+        // Get this player's position
+        PositionTuple pos = getCurrentPlayerPosition();
 
         // Try to center the camera on the player
         camera.position.set(pos.x, pos.y, 0);
     }
-    
-    public void updatePreviewLocation(PositionTuple previewLocation) {
+
+    public void setPreviewLocation(PositionTuple previewLocation) {
         this.previewLocation = previewLocation;
+    }
+    
+    public PositionTuple getPreviewLocation() {
+        return previewLocation;
+    }
+    
+    public PlayerState getCurrentPlayer() {
+        return visibility.getPlayers()[myIndex];
     }
 
     public PositionTuple getCurrentPlayerPosition() {
-        return visibility.getPlayerPosition(myIndex);
+        return getCurrentPlayer().getCurrentPosition();
     }
 
     @Override
@@ -120,9 +131,9 @@ public class MapView extends Stage {
         if (visibility != null) {
             Batch batch = getSpriteBatch();
             batch.begin();
-            
+
             for (int i = 0; i < visibility.getNumPlayers(); i++) {
-                PositionTuple currentPos = visibility.getPlayerPosition(i);
+                PositionTuple currentPos = visibility.getPlayers()[i].getCurrentPosition();
 
                 int dx = currentPos.x - texture.getWidth() / 2;
                 int dy = currentPos.y - texture.getHeight() / 2;
@@ -134,11 +145,11 @@ public class MapView extends Stage {
 
                 batch.draw(texture, dx, dy, texture.getHeight(), texture.getWidth());
             }
-            
+
             if (previewLocation != null) {
                 int dx = previewLocation.x - texture.getWidth() / 2;
                 int dy = previewLocation.y - texture.getHeight() / 2;
-                
+
                 batch.setColor(Color.RED);
                 batch.draw(texture, dx, dy, texture.getHeight(), texture.getWidth());
                 batch.setColor(Color.WHITE);
@@ -158,7 +169,7 @@ public class MapView extends Stage {
         int halfHeight = texture.getHeight() / 2;
 
         Vector2 worldCoords = screenToStageCoordinates(new Vector2(screenX, screenY));
-        PositionTuple curPos = visibility.getPlayerPosition(myIndex);
+        PositionTuple curPos = getCurrentPlayerPosition();
 
         if (worldCoords.x >= curPos.x - halfWidth && worldCoords.x <= curPos.x + halfWidth
                 && worldCoords.y >= curPos.y - halfHeight && worldCoords.y <= curPos.y + halfHeight) {
@@ -190,10 +201,10 @@ public class MapView extends Stage {
         }
 
         if (dragging) {
-            PositionTuple curPos = visibility.getPlayerPosition(myIndex);
+            PositionTuple curPos = getCurrentPlayerPosition();
             int newX = curPos.x + (int) (dragEndPoint.x - dragStartPoint.x);
             int newY = curPos.y + (int) (dragEndPoint.y - dragStartPoint.y);
-            visibility.setPlayerPosition(myIndex, new PositionTuple(newX, newY));
+            visibility.getPlayers()[myIndex].changePosition(new PositionTuple(newX, newY));
 
             dragStartPoint.set(0, 0);
             dragEndPoint.set(0, 0);

@@ -31,4 +31,9 @@ public class PositionTuple implements Serializable {
 	public PositionTuple(PositionTuple pos) {
 		this(pos.x, pos.y);
 	}
+	
+	@Override
+	public String toString() {
+	    return "{x: " + x + ", y: " + y + "}";
+	}
 }

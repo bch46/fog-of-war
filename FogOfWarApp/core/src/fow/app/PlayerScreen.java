@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.GL20;
 
 import fow.app.network.HandshakeListener;
 import fow.app.network.ServerConnection;
+import fow.common.MoveRequest;
 import fow.common.NetworkEvent;
 import fow.common.NetworkEvent.Type;
 import fow.common.VisibilityLayer;
@@ -89,8 +90,8 @@ public class PlayerScreen extends AbstractScreen {
      * map view (which is specified by user input).
      */
     public void sendMoveRequest() {
-        NetworkEvent evt = new NetworkEvent(Type.REQUEST_MOVE, mapView.getCurrentPlayerPosition());
-        game.serverConnection.sendEvent(evt);
+        MoveRequest move = new MoveRequest(game.serverConnection.getAccountId(), mapView.getCurrentPlayerPosition());
+        game.serverConnection.sendEvent(new NetworkEvent(Type.REQUEST_MOVE, move));
     }
 
     private class NetworkEventListener extends HandshakeListener {
