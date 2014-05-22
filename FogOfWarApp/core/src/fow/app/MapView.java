@@ -143,7 +143,13 @@ public class MapView extends Stage {
                     dy += dragEndPoint.y - dragStartPoint.y;
                 }
 
-                batch.draw(texture, dx, dy, texture.getHeight(), texture.getWidth());
+                if (i != myIndex) {
+                    batch.setColor(Color.GRAY);
+                    batch.draw(texture, dx, dy, texture.getHeight(), texture.getWidth());
+                    batch.setColor(Color.WHITE);
+                } else {
+                    batch.draw(texture, dx, dy, texture.getHeight(), texture.getWidth());
+                }
             }
 
             if (previewLocation != null) {
