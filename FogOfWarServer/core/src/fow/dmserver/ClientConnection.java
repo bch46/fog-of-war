@@ -26,7 +26,7 @@ public class ClientConnection {
     private boolean idle;
     private boolean confirmed;
     private int id;
-    
+
     private boolean isDm;
 
     private boolean debug;
@@ -43,14 +43,14 @@ public class ClientConnection {
         this.server = server;
         this.socket = socket;
         try {
-	        out = new ObjectOutputStream(socket.getOutputStream());
-	        out.flush();
-			in = new ObjectInputStream(socket.getInputStream());
-		} catch (IOException e) {
-			e.printStackTrace();
-			alive = false;
-			return;
-		}
+            out = new ObjectOutputStream(socket.getOutputStream());
+            out.flush();
+            in = new ObjectInputStream(socket.getInputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+            alive = false;
+            return;
+        }
         alive = true;
         isDm = false;
         startConnectionListener();
@@ -87,9 +87,9 @@ public class ClientConnection {
                         idle = false;
                         if (debug) System.out.println("server enqueued event: " + event);
                     } catch (ClassNotFoundException e) {
-                    	// TODO
-						e.printStackTrace();
-					} catch (final SocketTimeoutException e) {
+                        // TODO
+                        e.printStackTrace();
+                    } catch (final SocketTimeoutException e) {
                         handleIdleTimeOut();
                     } catch (final IOException e) {
                         kill();
@@ -102,9 +102,9 @@ public class ClientConnection {
                     e.printStackTrace();
                 }
                 try {
-                	socket.dispose();
+                    socket.dispose();
                 } catch (final GdxRuntimeException e) {
-                	e.printStackTrace();
+                    e.printStackTrace();
                 }
             }
         }.start();
@@ -135,6 +135,8 @@ public class ClientConnection {
     public void sendEvent(final NetworkEvent event) {
         try {
             if (debug) System.out.println("server sending event: " + event);
+            // Reset or else new versions of the same object get read from cache and are out of date
+            out.reset();
             out.writeObject(event);
             out.flush();
         } catch (final IOException e) {
@@ -151,10 +153,10 @@ public class ClientConnection {
         if (alive) {
             alive = false;
             idle = true;
-            server.enqueueEvent(new NetworkEvent(Type.DISCONNECT, new Object[] {confirmed,
-                    id}));
+            server.enqueueEvent(new NetworkEvent(Type.DISCONNECT, new Object[] {confirmed, id}));
             try {
                 if (debug) System.out.println("server sending kill event");
+                out.reset();
                 out.writeObject(new NetworkEvent(Type.DISCONNECT, null));
                 out.flush();
             } catch (final IOException e) {
@@ -183,15 +185,15 @@ public class ClientConnection {
     public int getId() {
         return id;
     }
-    
+
     public void setDm(final boolean isDm) {
-    	this.isDm = isDm;
+        this.isDm = isDm;
     }
-    
+
     /**
-     * @return 
+     * @return
      */
     public boolean isDm() {
-    	return isDm;
+        return isDm;
     }
 }

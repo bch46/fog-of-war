@@ -161,9 +161,14 @@ public class GameState {
 	 * @param id the ID of the player to add
 	 */
 	public void addNewPlayer(int id) {
-		// TODO figure out where to spawn new players, right now just goes to world center
-		players.put(id, new PlayerState(id, levelWidth/2, levelHeight/2));
+		// TODO figure out where to spawn new players, right now spawns based on ID to differentiate
+		players.put(id, new PlayerState(id, id*150, levelHeight/2));
 		PlayerState[] ps = players.values().toArray(new PlayerState[players.size()]);
+		
+		for (VisibilityLayer vl : visibilityLayers.values()) {
+		    vl.setPlayers(ps);
+		}
+		
 		VisibilityLayer newVl = new VisibilityLayer(levelWidth, levelHeight, sceneGraph, ps);
 		visibilityLayers.put(id, newVl);
 	}
@@ -173,10 +178,14 @@ public class GameState {
 	 * subset of the GameState with only the information relevant to what a player can see.
 	 * 
 	 * @param id the ID of the player
-	 * @return the VisibilityLayer for this
+	 * @return the VisibilityLayer for this player
 	 */
 	public VisibilityLayer getPlayerVisibility(int id) {
 		return visibilityLayers.get(id);
+	}
+	
+	public HashMap<Integer, VisibilityLayer> getPlayerVisibilities() {
+	    return visibilityLayers;
 	}
 
 	public int getDmId() {

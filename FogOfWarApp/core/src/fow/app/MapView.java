@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import fow.common.PlayerState;
 import fow.common.PositionTuple;
 import fow.common.VisibilityLayer;
 
@@ -27,15 +28,20 @@ public class MapView extends Stage {
 
     // This is essentially the state, as provided by the server
     protected VisibilityLayer visibility;
+    
+    // This player's index in the VisibilityLayer's players array, for convenience
+    private int myIndex;
 
     /*
-     * Whether or not the character's avatar is currently being dragging around
+     * Whether or not the character's avatar is currently being dragged around
      */
     private boolean dragging;
 
+    // Used for moving an avatar around the screen
     private Vector2 dragStartPoint;
     private Vector2 dragEndPoint;
 
+    // Used for sliding and zooming the camera
     private Vector2 camTranslation;
     private float zoomFactor;
 
@@ -51,6 +57,9 @@ public class MapView extends Stage {
         camera = (OrthographicCamera) getCamera();
 
         texture = new Texture(Gdx.files.internal("gnome.gif"));
+        
+        // So it will throw out of bounds exception if used improperly
+        myIndex = -1;
 
         dragging = false;
         dragStartPoint = new Vector2();
@@ -60,22 +69,30 @@ public class MapView extends Stage {
     }
 
     /**
-     * Update the VisibilityLayer that represents this player's view
+     * Update the VisibilityLayer that represents this player's view.
      * 
+     * @param accId the ID of the player who this VisibilityLayer belongs to
      * @param visibility
      */
-    public void updateVisibility(VisibilityLayer visibility) {
+    public void updateVisibility(int accId, VisibilityLayer visibility) {
         this.visibility = visibility;
+        System.out.println("NUM PLAYERS: "+visibility.getPlayers().length);
+        for (int i = 0; i < visibility.getPlayers().length; i++) {
+            PlayerState p = visibility.getPlayers()[i];
+            if (p.id == accId) {
+                myIndex = i;
+            }
+        }
 
         // This player's character should be first in the list
-        PositionTuple pos = visibility.getPlayerPosition(0);
+        PositionTuple pos = visibility.getPlayerPosition(myIndex);
 
         // Try to center the camera on the player
         camera.position.set(pos.x, pos.y, 0);
     }
 
     public PositionTuple getCurrentPlayerPosition() {
-        return visibility.getPlayerPosition(0);
+        return visibility.getPlayerPosition(myIndex);
     }
 
     @Override
@@ -83,12 +100,11 @@ public class MapView extends Stage {
         super.draw();
 
         // Translate camera if necessary
-        OrthographicCamera cam = (OrthographicCamera) getCamera();
-        cam.translate(camTranslation);
+        camera.translate(camTranslation);
 
         // Zoom camera if necessary, don't let it zoom too far in or we get backwards world
-        if (cam.zoom + zoomFactor > CAM_ZOOM_AMT) {
-            cam.zoom += zoomFactor;
+        if (camera.zoom + zoomFactor > CAM_ZOOM_AMT) {
+            camera.zoom += zoomFactor;
         }
 
         // Only attempt to draw the world if we have a visibility layer to work from
@@ -99,7 +115,7 @@ public class MapView extends Stage {
                 int dx = currentPos.x - texture.getWidth() / 2;
                 int dy = currentPos.y - texture.getHeight() / 2;
 
-                if (dragging) {
+                if (i == myIndex && dragging) {
                     dx += dragEndPoint.x - dragStartPoint.x;
                     dy += dragEndPoint.y - dragStartPoint.y;
                 }
@@ -118,7 +134,7 @@ public class MapView extends Stage {
         int halfHeight = texture.getHeight() / 2;
 
         Vector2 worldCoords = screenToStageCoordinates(new Vector2(screenX, screenY));
-        PositionTuple curPos = visibility.getPlayerPosition(0);
+        PositionTuple curPos = visibility.getPlayerPosition(myIndex);
 
         if (worldCoords.x >= curPos.x - halfWidth && worldCoords.x <= curPos.x + halfWidth
                 && worldCoords.y >= curPos.y - halfHeight && worldCoords.y <= curPos.y + halfHeight) {
@@ -142,10 +158,10 @@ public class MapView extends Stage {
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         if (dragging) {
-            PositionTuple curPos = visibility.getPlayerPosition(0);
+            PositionTuple curPos = visibility.getPlayerPosition(myIndex);
             int newX = curPos.x + (int) (dragEndPoint.x - dragStartPoint.x);
             int newY = curPos.y + (int) (dragEndPoint.y - dragStartPoint.y);
-            visibility.setPlayerPosition(0, new PositionTuple(newX, newY));
+            visibility.setPlayerPosition(myIndex, new PositionTuple(newX, newY));
             
             dragStartPoint.set(0, 0);
             dragEndPoint.set(0, 0);

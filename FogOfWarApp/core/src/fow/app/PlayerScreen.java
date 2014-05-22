@@ -98,7 +98,8 @@ public class PlayerScreen extends AbstractScreen {
             super.onReceiveNetworkEvent(serverConnection, event);
             // Client should only ever receive this type of event
             if (event.getType().equals(Type.UPDATE_VISIBILITY)) {
-                mapView.updateVisibility((VisibilityLayer) event.getData());
+                mapView.updateVisibility(serverConnection.getAccountId(),
+                        (VisibilityLayer) event.getData());
             }
         }
     }
