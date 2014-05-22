@@ -3,6 +3,8 @@ package fow.app;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
 
+import fow.app.network.ServerConnection;
+
 public class Main extends Game {
 	public static final boolean DEV_MODE = true;
 	public static final String LOG = Main.class.getSimpleName();

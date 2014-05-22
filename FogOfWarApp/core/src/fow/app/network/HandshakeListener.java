@@ -1,4 +1,4 @@
-package fow.app;
+package fow.app.network;
 
 import fow.common.NetworkEvent;
 import fow.common.NetworkEvent.Type;

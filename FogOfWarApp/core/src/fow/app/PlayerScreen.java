@@ -3,6 +3,8 @@ package fow.app;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 
+import fow.app.network.HandshakeListener;
+import fow.app.network.ServerConnection;
 import fow.common.NetworkEvent;
 import fow.common.NetworkEvent.Type;
 import fow.common.VisibilityLayer;

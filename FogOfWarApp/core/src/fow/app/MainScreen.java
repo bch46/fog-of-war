@@ -1,8 +1,11 @@
 package fow.app;
 
+import fow.app.network.HandshakeListener;
+import fow.app.network.ServerConnection;
+
 public class MainScreen extends AbstractScreen {
 
-	protected final MainView view;
+	protected final MainMenu view;
 
 	/**
 	 * Initialize the elements of the main screen, namely the view
@@ -12,7 +15,7 @@ public class MainScreen extends AbstractScreen {
 	public MainScreen(Main game) {
 		super(game);
 
-		view = new MainView(this);
+		view = new MainMenu(this);
 		stage.addActor(view);
 	}
 

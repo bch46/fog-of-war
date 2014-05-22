@@ -9,7 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
-public class MainView extends Table {
+public class MainMenu extends Table {
 
 	private final MainScreen controller;
 	private final Skin skin;
@@ -17,7 +17,7 @@ public class MainView extends Table {
 	private TextField idText;
 	private TextField ipText;
 
-	public MainView(final MainScreen controller) {
+	public MainMenu(final MainScreen controller) {
 		this.controller = controller;
 		skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
@@ -37,7 +37,7 @@ public class MainView extends Table {
 		connectButton.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				MainView.this.controller.onConnectPressed();
+				MainMenu.this.controller.onConnectPressed();
 			}
 		});
 

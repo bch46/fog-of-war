@@ -1,5 +1,7 @@
 package fow.app;
 
+import fow.app.network.HandshakeListener;
+
 public class MasterScreen extends AbstractScreen {
 	
 	public MasterScreen(Main game) {

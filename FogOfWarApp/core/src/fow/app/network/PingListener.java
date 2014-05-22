@@ -1,6 +1,6 @@
-package fow.app;
+package fow.app.network;
 
-import fow.app.ServerConnection.OnReceiveNetworkEventListener;
+import fow.app.network.ServerConnection.OnReceiveNetworkEventListener;
 import fow.common.NetworkEvent;
 import fow.common.NetworkEvent.Type;
 

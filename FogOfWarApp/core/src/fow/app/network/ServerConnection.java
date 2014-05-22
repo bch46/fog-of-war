@@ -1,4 +1,4 @@
-package fow.app;
+package fow.app.network;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
