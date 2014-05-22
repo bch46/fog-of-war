@@ -43,7 +43,6 @@ public class MasterMenu extends Table {
         selectPlayer.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                System.out.println("SELECT BOX CHANGED");
                 MasterMenu.this.controller.setSelectedPlayer(selectPlayer.getSelected());
             }
         });

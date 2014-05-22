@@ -210,7 +210,6 @@ public class NetworkEventHandler {
             // Let everyone know of the new visibilities
             sendAllVisibilityUpdates();
         } else if (e.getAccountId() == move.getId()){
-            System.out.println("Received request to move to "+move.getMoveLocation());
             // player is requesting to move itself
             state.pendingRequests.put(e.getAccountId(), move.getMoveLocation());
 
