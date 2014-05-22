@@ -30,15 +30,8 @@ public class MasterMenu extends Table {
         this.controller = controller;
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
-        this.add(new Label("Welcome, Dungeon Master!", skin)).colspan(3);
-        this.row();
-
         numPlayers = new Label("Currently there are no players", skin);
         pendingRequests = new Label(" and no pending requests", skin);
-        this.add(numPlayers);
-        this.add(pendingRequests);
-        this.row();
-
         selectPlayer = new SelectBox<Integer>(skin);
         selectPlayer.addListener(new ChangeListener() {
             @Override
@@ -46,8 +39,6 @@ public class MasterMenu extends Table {
                 MasterMenu.this.controller.setSelectedPlayer(selectPlayer.getSelected());
             }
         });
-        this.add(selectPlayer);
-
         approveButton = new TextButton("Approve move", skin);
         approveButton.addListener(new ChangeListener() {
             @Override
@@ -55,8 +46,6 @@ public class MasterMenu extends Table {
                 MasterMenu.this.controller.onMoveRequestDecision(true);
             }
         });
-        this.add(approveButton);
-
         denyButton = new TextButton("Deny move", skin);
         denyButton.addListener(new ChangeListener() {
             @Override
@@ -64,6 +53,16 @@ public class MasterMenu extends Table {
                 MasterMenu.this.controller.onMoveRequestDecision(false);
             }
         });
+
+        this.add(new Label("Welcome, Dungeon Master!", skin)).colspan(3);
+        this.row();
+
+        this.add(numPlayers);
+        this.add(pendingRequests);
+        this.row();
+
+        this.add(selectPlayer);
+        this.add(approveButton);
         this.add(denyButton);
     }
 
@@ -75,7 +74,7 @@ public class MasterMenu extends Table {
         int n = visibilities.size();
         Integer[] ids = visibilities.keySet().toArray(new Integer[n]);
         selectPlayer.setItems(ids);
-        
+
         if (n == 0) {
             numPlayers.setText("There are currently no players");
         } else if (n == 1) {
@@ -99,7 +98,7 @@ public class MasterMenu extends Table {
         approveButton.setVisible(visible);
         denyButton.setVisible(visible);
     }
-    
+
     public void selectFirstPlayer() {
         selectPlayer.setSelectedIndex(0);
         selectPlayer.fire(new ChangeListener.ChangeEvent());
